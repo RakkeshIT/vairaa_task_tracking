@@ -1,3 +1,4 @@
+'use client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,8 +14,44 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { supabaseClient } from "@/lib/supabaseClient"
 
 export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
+  const [otp, setOtp] = useState('')
+  const searchParams = useSearchParams()
+  const email = searchParams.get('email')
+  const router = useRouter()
+  const handleVerify = async () => {
+    const { data, error }: any = await supabaseClient
+      .from('otp_codes')
+      .select('*')
+      .eq('email', email)
+      .eq('otp', parseInt(otp))
+      .single()
+
+    if (error) {
+      alert(error.message)
+      console.log(error.message)
+      return;
+    }
+
+    console.log("Now:", new Date());
+    console.log("DB Expiry:", data.expiry);
+    console.log("DB Expiry as Date:", new Date(data.expiry));
+
+
+    if (Date.now() > new Date(data.expiry).getTime()) {
+      alert("OTP Expired");
+      return;
+    }
+    alert("OTP Verified! Redirecting to dashboard...");
+    router.push("/dashboard");
+
+    // Optionally delete used OTP
+    await supabaseClient.from("otp_codes").delete().eq("id", data.id);
+  }
   return (
     <div
       className={cn("flex flex-col gap-6 md:min-h-[450px]", className)}
@@ -22,7 +59,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
     >
       <Card className="flex-1 overflow-hidden p-0">
         <CardContent className="grid flex-1 p-0 md:grid-cols-2">
-          <form className="flex flex-col items-center justify-center p-6 md:p-8">
+          <form className="flex flex-col items-center justify-center p-6 md:p-8" action={handleVerify}>
             <FieldGroup>
               <Field className="items-center text-center">
                 <h1 className="text-2xl font-bold">Enter verification code</h1>
@@ -39,6 +76,9 @@ export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
                   id="otp"
                   required
                   containerClassName="gap-4"
+                  name="otp"
+                  value={otp}
+                  onChange={(value) => setOtp(value)}
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
@@ -66,7 +106,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
           </form>
           <div className="bg-muted relative hidden md:block">
             <img
-              src="/placeholder.svg"
+              src=""
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />

@@ -1,3 +1,4 @@
+'use client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,13 +10,87 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-
+import { useState } from "react"
+import { supabaseClient } from "@/lib/supabaseClient"
+import { useRouter } from "next/navigation"
+type props = {
+  email: string
+  password: string
+}
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const router = useRouter()
+  const [form, setForm] = useState<props>({
+    email: '',
+    password: '',
+  })
+
+  const [formError, setError] = useState<props>({
+    email: '',
+    password: '',
+  })
+
+  const validateForm = () => {
+    const newErrors: props = { email: '', password: '' }
+
+    if (!form.email.trim()) newErrors.email = "Email is Required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Please Enter Valid Email"
+
+    if (!form.password.trim()) newErrors.password = "Password Required"
+    else if (form.password.length < 6) newErrors.password = "Password Must be 6 Characters"
+
+    setError(newErrors)
+
+    return Object.values(newErrors).every(err => err == '')
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
+
+  const handleSignIn = async () => {
+    if (validateForm()) {
+
+      const { data: user, error } = await supabaseClient
+        .from('users')
+        .select('*')
+        .eq('email', form.email)
+        .single()
+
+      if (error || !user) {
+        alert("User Not Found")
+        return
+      }
+
+      const { data: { session }, error: authError } = await supabaseClient.auth.signInWithPassword(
+        {
+          email: form.email,
+          password: form.password
+        }
+      )
+
+      if (authError || !session) {
+        alert(authError?.message || "Login failed");
+        return;
+      }
+
+      await fetch('/api/set-cookie', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: session?.access_token })
+      })
+      return router.push('/dashboard')
+    }
+  }
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6", className)} {...props} action={handleSignIn}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -25,7 +100,8 @@ export function LoginForm({
         </div>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" type="email" placeholder="m@example.com" name="email" value={form.email} onChange={handleChange} />
+          {formError.email && <p className="text-red-500">{formError.email}</p>}
         </Field>
         <Field>
           <div className="flex items-center">
@@ -37,7 +113,9 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" name="password" value={form.password} onChange={handleChange} />
+          {formError.password && <p className="text-red-500">{formError.password}</p>}
+
         </Field>
         <Field>
           <Button type="submit">Login</Button>

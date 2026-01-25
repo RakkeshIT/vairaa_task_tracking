@@ -1,3 +1,4 @@
+'use client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,13 +10,98 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-
+import { useState } from "react"
+import { supabaseClient } from "@/lib/supabaseClient"
+import { useRouter } from "next/navigation"
+type props = {
+  name: string;
+  email: string
+  password: string
+  confirmPassword: string;
+}
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const router = useRouter()
+  const [form, setForm] = useState<props>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
+
+  const [formError, setError] = useState<props>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
+
+  const validateForm = () => {
+    const newErrors: props = { name: '', email: '', password: '', confirmPassword: '' }
+
+    if (!form.name.trim()) newErrors.name = "Name is Required"
+    if (!form.email.trim()) newErrors.email = "Email is Required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Please Enter Valid Email"
+
+    if (!form.password.trim()) newErrors.password = "Password Required"
+    else if (form.password.length < 6) newErrors.password = "Password Must be 6 Characters"
+
+    if (form.password !== form.confirmPassword) newErrors.confirmPassword = "Password doesn't Match"
+
+    setError(newErrors)
+
+    return Object.values(newErrors).every(err => err == '')
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
+
+  const handleSignUp = async () => {
+    if (!validateForm()) return;
+
+    // ✅ 1. Signup in Supabase Auth
+    const { error } = await supabaseClient.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: { full_name: form.name },
+      },
+    });
+
+    if (error) {
+      console.log("Signup error:", error.message);
+      alert(error.message);
+      return; // ❗ STOP if auth failed
+    }
+
+    // ✅ 2. Insert into users table
+    const { error: tableError } = await supabaseClient
+      .from("users")
+      .insert({
+        email: form.email,
+        full_name: form.name,
+        role: "student",
+      });
+
+    if (tableError) {
+      console.log("Users table error:", tableError.message);
+      alert("Account created but profile not saved. Contact admin.");
+      return;
+    }
+
+    // ✅ 3. Success → redirect
+    alert("User created successfully! Please check your email to confirm.");
+    router.push("/auth/login");
+  };
+
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6", className)} {...props} action={handleSignUp}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -25,27 +111,31 @@ export function SignupForm({
         </div>
         <Field>
           <FieldLabel htmlFor="name">Full Name</FieldLabel>
-          <Input id="name" type="text" placeholder="John Doe" required />
+          <Input id="name" type="text" placeholder="John Doe" name="name" value={form.name} onChange={handleChange} />
+          {formError.name && <p className="text-red-500">{formError.name}</p>}
         </Field>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" type="email" placeholder="m@example.com" name="email" value={form.email} onChange={handleChange} />
           <FieldDescription>
             We&apos;ll use this to contact you. We will not share your email
             with anyone else.
           </FieldDescription>
+          {formError.email && <p className="text-red-500">{formError.email}</p>}
         </Field>
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" name="password" value={form.password} onChange={handleChange} />
           <FieldDescription>
             Must be at least 8 characters long.
           </FieldDescription>
+          {formError.password && <p className="text-red-500">{formError.password}</p>}
         </Field>
         <Field>
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input id="confirm-password" type="password" required />
+          <Input id="confirm-password" type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} />
           <FieldDescription>Please confirm your password.</FieldDescription>
+          {formError.confirmPassword && <p className="text-red-500">{formError.confirmPassword}</p>}
         </Field>
         <Field>
           <Button type="submit">Create Account</Button>
