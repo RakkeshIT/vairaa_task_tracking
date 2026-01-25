@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiHome, FiBook, FiCheckSquare, FiBarChart2, FiUser, FiLogOut } from "react-icons/fi";
+import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 
 interface SidebarProps {
   open: boolean;
+  toggleSidebar: () => void;
 }
 
-export default function Sidebar({ open }: SidebarProps) {
+export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
   const links = [
     { name: "Overview", icon: <FiHome />, href: "/dashboard" },
     { name: "Daily Topics", icon: <FiBook />, href: "/dashboard/topics" },
@@ -19,12 +21,24 @@ export default function Sidebar({ open }: SidebarProps) {
 
   return (
     <motion.div
-      animate={{ width: open ? 250 : 60 }}
-      className="bg-gray-800 text-white flex flex-col overflow-hidden transition-all duration-300"
+      animate={{ width: open ? 250 : 64 }}
+      transition={{ type: "spring", stiffness: 260, damping: 25 }}
+      className="relative bg-gray-800 text-white flex flex-col"
     >
-      <div className="flex items-center justify-center h-20 text-2xl font-bold border-b border-gray-700">
+      {/* 🔥 Toggle Button */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute -right-2 top-24 bg-gray-800 border border-gray-700 rounded-full p-1 shadow-lg hover:bg-gray-700 transition z-50"
+      >
+        {open ? <IoIosArrowDropleft size={22} /> : <IoIosArrowDropright size={22} />}
+      </button>
+
+      {/* Logo */}
+      <div className="flex items-center justify-center h-20 text-xl font-bold border-b border-gray-700">
         {open ? "Vairaa Coders" : "VC"}
       </div>
+
+      {/* Links */}
       <div className="flex-1 flex flex-col mt-4">
         {links.map((link) => (
           <Link
@@ -32,13 +46,16 @@ export default function Sidebar({ open }: SidebarProps) {
             href={link.href}
             className="flex items-center gap-4 py-3 px-4 hover:bg-gray-700 transition"
           >
-            {link.icon}
+            <span className="text-lg">{link.icon}</span>
             {open && <span>{link.name}</span>}
           </Link>
         ))}
       </div>
+
+      {/* Logout */}
       <div className="p-4 border-t border-gray-700 flex items-center gap-4 cursor-pointer hover:bg-gray-700 transition">
-        <FiLogOut /> {open && <span>Logout</span>}
+        <FiLogOut />
+        {open && <span>Logout</span>}
       </div>
     </motion.div>
   );

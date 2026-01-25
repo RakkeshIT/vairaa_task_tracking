@@ -25,6 +25,7 @@
       "headers": {
         "Authorization": "Bearer ${REGISTRY_TOKEN}"
       }
-    }
+    },
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }
