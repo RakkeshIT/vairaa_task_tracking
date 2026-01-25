@@ -83,10 +83,16 @@ export default function TopicsTablePage() {
                         <div>
                             <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                                 <FiBook className="text-blue-600" />
-                                Topics List
+                                Topics Management
                             </h1>
                             <p className="text-gray-600 mt-2">Manage all learning topics in one place</p>
                         </div>
+                        <Link href="/admin/topics/create">
+                            <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors">
+                                <FiPlus />
+                                Create New Topic
+                            </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -235,7 +241,9 @@ export default function TopicsTablePage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
                                         </th>
-    
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -289,6 +297,31 @@ export default function TopicsTablePage() {
                                                     }`}>
                                                     {topic.status === "active" ? "Active" : "Inactive"}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {/* View logic */ }}
+                                                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="View"
+                                                    >
+                                                        <FiEye />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {/* Edit logic */ }}
+                                                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(topic.id)}
+                                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </motion.tr>
                                     ))}
