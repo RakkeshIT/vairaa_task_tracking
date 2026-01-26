@@ -25,7 +25,7 @@ export default function AdminSidebar({
   return (
     <motion.div
       animate={{ width: open ? 260 : 70 }}
-      className="relative bg-gray-900 text-white flex flex-col border-r border-white"
+      className="bg-gray-900 text-white flex flex-col border-r border-white relative"
     >
       {/* Toggle Button */}
       <button
@@ -92,6 +92,10 @@ export default function AdminSidebar({
             </Link>
           </div>
         )}
+
+        <Link href="/admin/users/create" className="flex items-center gap-3 p-2 hover:bg-gray-800 rounded">
+            <FiCheckSquare />  {open && "Create Users"}
+        </Link>
       </nav>
     </motion.div>
   );

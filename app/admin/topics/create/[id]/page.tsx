@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { FiBook, FiClock, FiCalendar, FiCheck } from "react-icons/fi";
+import { useParams, useRouter } from "next/navigation";
 
 export default function CreateTopicPage() {
   const [form, setForm] = useState({
@@ -15,29 +16,60 @@ export default function CreateTopicPage() {
   });
 
   const [loading, setLoading] = useState(false);
-
+  const {id} = useParams()
+  const router = useRouter()
+  console.log("id", id)
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  useEffect(() => {
+    fetchTopic()
+  }, [])
+
+  const fetchTopic = async () => {
+    try{
+        const {data, error} = await supabaseClient
+        .from('topics')
+        .select("*")
+        .eq('id',id)
+        .single()
+
+        setForm({
+            title: data.title,
+            topic_date: data.topic_date,
+            duration: String(data.duration),
+            status: data.status,
+            section: data.section,
+        })
+
+        if(error){
+            console.log("Data Can not Fetch", error.message)
+        }
+    }catch(error) {
+        console.log("Data Fetching Error", error)
+    }
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabaseClient.from("topics").insert({
+
+    const { error } = await supabaseClient.from("topics").update({
       title: form.title,
       topic_date: form.topic_date,
       duration: Number(form.duration),
       status: form.status,
       section: form.section
-    });
+    })
+    .eq('id', id);
 
     setLoading(false);
-
+    router.push('/admin/topics/view')
     if (error) alert(error.message);
     else {
-      alert("Topic Created Successfully ✅");
-      setForm({ title: "", topic_date: "", duration: "", status: "active", section: '' });
+      alert("Topic Update Successfully ✅");
+      setForm({ title: "", topic_date: "", duration: "", status: "active", section: '', });
     }
   };
 
@@ -59,7 +91,7 @@ export default function CreateTopicPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-           <div className="space-y-2">
+            <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">Section</label>
             <select
               name="section"

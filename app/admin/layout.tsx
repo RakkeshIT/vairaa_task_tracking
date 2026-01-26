@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex h-screen bg-gray-100">
             <AdminSidebar open={open} toggle={() => setOpen(!open)} />
 
-            <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1">
                 <AdminTopbar toggleSidebar={() => setOpen(!open)} />
                 <main className="">
                     <motion.main

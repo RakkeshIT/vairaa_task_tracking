@@ -5,13 +5,16 @@ import { supabaseClient } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { FiBook, FiClock, FiCalendar, FiSearch, FiEdit, FiTrash2, FiEye, FiPlus, FiFilter } from "react-icons/fi";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ListCheckIcon } from "lucide-react";
 
+const sections = ['Javascript', 'React JS', 'Node Js & Express Js']
 export default function TopicsTablePage() {
     const [topics, setTopics] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
-
+    const router = useRouter();
     // Fetch topics
     useEffect(() => {
         fetchTopics();
@@ -45,6 +48,10 @@ export default function TopicsTablePage() {
 
         return matchesSearch && matchesStatus;
     });
+
+    const sectionTopic = (sec: string) => 
+        filteredTopics.filter((t) => t.section == sec)
+    
 
     // Delete topic
     const handleDelete = async (id: any) => {
@@ -194,163 +201,179 @@ export default function TopicsTablePage() {
                 </div>
 
                 {/* Table */}
-                <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
-                    {loading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                        </div>
-                    ) : filteredTopics.length === 0 ? (
-                        <div className="text-center py-16">
-                            <FiBook className="mx-auto text-gray-400" size={48} />
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">No topics found</h3>
-                            <p className="mt-1 text-gray-500">
-                                {search || filterStatus !== "all" ? "Try adjusting your filters" : "Get started by creating a new topic"}
-                            </p>
-                            {!(search || filterStatus !== "all") && (
-                                <Link href="/topics/create" className="mt-4 inline-block">
-                                    <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                                        <FiPlus />
-                                        Create New Topic
-                                    </button>
-                                </Link>
+
+                {
+                    sections.map((sec: any, i: any) =>{
+                        const list = sectionTopic(sec)
+                        console.log("List",list)
+                        return (
+                        <div key={i} className="bg-white rounded-xl shadow overflow-hidden border border-gray-100 mb-4">
+                             {/* SECTION HEADER */}
+                            <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                                <h2 className="text-lg font-semibold capitalize">{sec}</h2>
+                                <span className="text-sm text-gray-500">
+                                {list?.length || 0} Topics
+                                </span>
+                            </div>
+                            {loading ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : list.length === 0 ? (
+                                <div className="text-center py-16">
+                                    <FiBook className="mx-auto text-gray-400" size={48} />
+                                    <h3 className="mt-4 text-lg font-medium text-gray-900">No topics found</h3>
+                                    <p className="mt-1 text-gray-500">
+                                        {search || filterStatus !== "all" ? "Try adjusting your filters" : "Get started by creating a new topic"}
+                                    </p>
+                                    {!(search || filterStatus !== "all") && (
+                                        <Link href="/topics/create" className="mt-4 inline-block">
+                                            <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                                <FiPlus />
+                                                Create New Topic
+                                            </button>
+                                        </Link>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto ">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    ID
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Topic Title
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <div className="flex items-center gap-1">
+                                                        <FiCalendar />
+                                                        Date
+                                                    </div>
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <div className="flex items-center gap-1">
+                                                        <FiClock />
+                                                        Duration
+                                                    </div>
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {list.map((topic: any, index) => (
+                                                <motion.tr
+                                                    key={topic.id}
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: index * 0.05 }}
+                                                    className="hover:bg-gray-50 transition-colors"
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-mono text-gray-500">{index + 1}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center">
+                                                            <div className="flex-shrink-0 h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
+                                                                <FiBook className="text-blue-600" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    {topic.title || "Untitled Topic"}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    Created {new Date(topic.created_at).toLocaleDateString()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">
+                                                            {formatDate(topic.topic_date)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                                                                    {topic.duration} min
+                                                                </div>
+                                                                <span className="text-sm text-gray-500">
+                                                                    ({Math.floor(topic.duration / 60)}h {topic.duration % 60}m)
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${topic.status === "active"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-red-100 text-red-800"
+                                                            }`}>
+                                                            {topic.status === "active" ? "Active" : "Inactive"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => {/* View logic */ }}
+                                                                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="View"
+                                                            >
+                                                                <FiEye />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => router.push(`/admin/topics/create/${topic.id}`)}
+                                                                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                                title="Edit"
+                                                            >
+                                                                <FiEdit />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(topic.id)}
+                                                                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Delete"
+                                                            >
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </motion.tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Pagination (optional) */}
+                            {filteredTopics.length > 0 && (
+                                <div className="border-t border-gray-200 px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-gray-700">
+                                            Showing <span className="font-medium">1</span> to{" "}
+                                            <span className="font-medium">{filteredTopics.length}</span> of{" "}
+                                            <span className="font-medium">{filteredTopics.length}</span> results
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                                Previous
+                                            </button>
+                                            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            ID
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Topic Title
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <div className="flex items-center gap-1">
-                                                <FiCalendar />
-                                                Date
-                                            </div>
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <div className="flex items-center gap-1">
-                                                <FiClock />
-                                                Duration
-                                            </div>
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTopics.map((topic, index) => (
-                                        <motion.tr
-                                            key={topic.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            className="hover:bg-gray-50 transition-colors"
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-mono text-gray-500">#{topic.id}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
-                                                        <FiBook className="text-blue-600" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {topic.title || "Untitled Topic"}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            Created {new Date(topic.created_at).toLocaleDateString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {formatDate(topic.topic_date)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                                                            {topic.duration} min
-                                                        </div>
-                                                        <span className="text-sm text-gray-500">
-                                                            ({Math.floor(topic.duration / 60)}h {topic.duration % 60}m)
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${topic.status === "active"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-red-100 text-red-800"
-                                                    }`}>
-                                                    {topic.status === "active" ? "Active" : "Inactive"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => {/* View logic */ }}
-                                                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title="View"
-                                                    >
-                                                        <FiEye />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {/* Edit logic */ }}
-                                                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <FiEdit />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(topic.id)}
-                                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
-                    {/* Pagination (optional) */}
-                    {filteredTopics.length > 0 && (
-                        <div className="border-t border-gray-200 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-700">
-                                    Showing <span className="font-medium">1</span> to{" "}
-                                    <span className="font-medium">{filteredTopics.length}</span> of{" "}
-                                    <span className="font-medium">{filteredTopics.length}</span> results
-                                </div>
-                                <div className="flex gap-2">
-                                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-                                        Previous
-                                    </button>
-                                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                    )
+                    })
+                }
             </div>
         </div>
     );
