@@ -32,8 +32,6 @@ export default function CreateUserPage() {
     setBulkFile(e.target.files[0]);
   };
 
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -53,20 +51,20 @@ export default function CreateUserPage() {
   setLoading(true);
 
   try {
-    // 1️⃣ Ensure the file is JSON
+    // Ensure the file is JSON
     if (bulkFile.type !== "application/json") {
       throw new Error("Please upload a valid JSON file.");
     }
-    // 2️⃣ Read file once
+    // Read file once
     const fileText = await bulkFile.text();
-    // 3️⃣ Parse JSON
+    // Parse JSON
     const users: UserForm[] = JSON.parse(fileText);
-    // 4️⃣ Validate array
+    // Validate array
     if (!Array.isArray(users)) {
       throw new Error("JSON must be an array of user objects.");
     }
     console.log("Parsed users: ", users);
-    // 5️⃣ Send to backend API
+    //Send to backend API
     await axios.post("/api/create-user", { users });
     alert("Bulk users created successfully!");
     setBulkFile(null);
