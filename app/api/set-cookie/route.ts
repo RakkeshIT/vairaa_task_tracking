@@ -17,3 +17,19 @@ export async function POST(req: NextRequest) {
 
   return response;
 }
+
+export async function DELETE(req: NextRequest) {
+  const response = NextResponse.json({
+    success: true,
+    message: "Logged out successfully",
+  });
+  response.cookies.delete( {
+    name:"auth-cookie",
+    path: "/",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return response;
+}

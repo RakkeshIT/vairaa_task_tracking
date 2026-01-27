@@ -4,7 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiHome, FiBook, FiCheckSquare, FiBarChart2, FiUser, FiLogOut } from "react-icons/fi";
 import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
-
+import { useRouter } from "next/navigation";
+import axios from 'axios'
 interface SidebarProps {
   open: boolean;
   toggleSidebar: () => void;
@@ -18,7 +19,16 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
     { name: "Stats", icon: <FiBarChart2 />, href: "/dashboard/stats" },
     { name: "Profile", icon: <FiUser />, href: "/dashboard/profile" },
   ];
+  const router = useRouter()
 
+  const handleLogout = async () => {
+    const res = await axios.delete('/api/set-cookie')
+    const data = res.data
+    if(data.success) {
+      console.log("Logout Success")
+      router.push('/auth/login')
+    }
+  }
   return (
     <motion.div
       animate={{ width: open ? 250 : 64 }}
@@ -54,8 +64,11 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
 
       {/* Logout */}
       <div className="p-4 border-t border-gray-700 flex items-center gap-4 cursor-pointer hover:bg-gray-700 transition">
+        <button onClick={handleLogout}>
+
         <FiLogOut />
         {open && <span>Logout</span>}
+        </button>
       </div>
     </motion.div>
   );

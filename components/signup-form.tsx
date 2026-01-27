@@ -13,6 +13,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { supabaseClient } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
+import bcrypt from 'bcryptjs'
 type props = {
   name: string;
   email: string
@@ -37,6 +38,8 @@ export function SignupForm({
     password: '',
     confirmPassword: ''
   })
+
+  const hashPassword = bcrypt.hashSync(form.password, 10)
 
   const validateForm = () => {
     const newErrors: props = { name: '', email: '', password: '', confirmPassword: '' }
@@ -86,6 +89,7 @@ export function SignupForm({
       .insert({
         email: form.email,
         full_name: form.name,
+        password: hashPassword,
         role: "student",
       });
 

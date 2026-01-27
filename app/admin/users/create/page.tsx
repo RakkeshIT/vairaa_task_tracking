@@ -1,8 +1,11 @@
 "use client";
-
 import { useState } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { FiUpload, FiUsers, FiUserPlus } from "react-icons/fi";
+import { supabaseRoleClient } from "@/lib/supabaseRoleClient";
+import axios from "axios";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 interface UserForm {
   full_name: string;
@@ -25,98 +28,71 @@ export default function CreateUserPage() {
   ) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setBulkFile(e.target.files[0]);
+    if (!e.target.files?.[0]) return;
+    setBulkFile(e.target.files[0]);
   };
 
-  // Generate Student ID
-  const generateStudentID = async () => {
-    const { count } = await supabaseClient
-      .from("users")
-      .select("id", { count: "exact", head: true });
-    return `VCMERN${(count! + 101).toString().padStart(3, "0")}`;
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const student_id = await generateStudentID();
-    const password = Math.random().toString(36).slice(-8);
-
-    const { data: authData, error: authError } =
-      await supabaseClient.auth.admin.createUser({
-        email: form.email,
-        password,
-        user_metadata: { full_name: form.full_name, student_id, role: form.role },
-      });
-
-    if (authError) {
-      setLoading(false);
-      alert(authError.message);
-      return;
+    try{  
+      const res = await axios.post('/api/create-user', {users: [form]})
+      alert(`User created! Student ID:`);
+      setForm({ full_name: "", email: "", role: "student" });
+    } catch(error){
+      console.log("Error", error)
     }
-
-    await supabaseClient.from("users").insert({
-      id: authData.user?.id,
-      student_id,
-      full_name: form.full_name,
-      email: form.email,
-      role: form.role,
-    });
-
     setLoading(false);
-    alert(`User created! Student ID: ${student_id}`);
-    setForm({ full_name: "", email: "", role: "student" });
   };
 
-  const handleBulkSubmit = async () => {
-    if (!bulkFile) return alert("Upload a file first!");
-    setLoading(true);
+ const handleBulkSubmit = async () => {
+  if (!bulkFile) return alert("Upload a file first!");
+  setLoading(true);
 
-    const text = await bulkFile.text();
-    let users: UserForm[] = [];
-    try {
-      users = JSON.parse(text);
-    } catch (err) {
-      alert("Invalid JSON file!");
-      setLoading(false);
-      return;
+  try {
+    // 1️⃣ Ensure the file is JSON
+    if (bulkFile.type !== "application/json") {
+      throw new Error("Please upload a valid JSON file.");
     }
-
-    for (let u of users) {
-      const student_id = await generateStudentID();
-      const password = Math.random().toString(36).slice(-8);
-
-      const { data: authData } = await supabaseClient.auth.admin.createUser({
-        email: u.email,
-        password,
-        user_metadata: { full_name: u.full_name, student_id, role: u.role },
-      });
-
-      await supabaseClient.from("users").insert({
-        id: authData.user?.id,
-        student_id,
-        full_name: u.full_name,
-        email: u.email,
-        role: u.role,
-      });
+    // 2️⃣ Read file once
+    const fileText = await bulkFile.text();
+    // 3️⃣ Parse JSON
+    const users: UserForm[] = JSON.parse(fileText);
+    // 4️⃣ Validate array
+    if (!Array.isArray(users)) {
+      throw new Error("JSON must be an array of user objects.");
     }
-
-    setLoading(false);
+    console.log("Parsed users: ", users);
+    // 5️⃣ Send to backend API
+    const res = await axios.post("/api/create-user", { users });
     alert("Bulk users created successfully!");
     setBulkFile(null);
-  };
+  } catch (err) {
+    console.error("Bulk Upload Error: ", err);
+    alert("Invalid JSON file! Make sure it's a valid array of user objects.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Send Mail
+const sendMail = async () =>{
+  try{
+    const res = axios.post('/api/mail')
+  alert("Mail Sent")
+}catch(error){
+  console.log("Error: ", error)
+}
+}
 
   return (
-    <div className="min-h-screen flex bg-gray-100 p-6 md:p-12">
-      {/* Left Side Image */}
-      <div className="hidden md:flex w-1/2 items-center justify-center">
-        <img
-          src="/students.png"
-          alt="Students Illustration"
-          className="w-3/4 h-auto object-contain"
-        />
-      </div>
+    <div className="min-h-screen bg-gray-100 p-6 md:p-12">
+      <Button className="bg-blue-600" onClick={sendMail}>
+        Send Mail With Users details
+      </Button>
 
       {/* Right Side */}
       <div className="flex-1 flex flex-col gap-8">
@@ -191,21 +167,18 @@ export default function CreateUserPage() {
           <div className="flex flex-col md:flex-row gap-6">
             <input
               type="file"
-              accept=".json"
+              accept=".json,application/json"
               onChange={handleFileUpload}
               className="border p-3 rounded-lg flex-1"
             />
             <button
               onClick={handleBulkSubmit}
               disabled={loading || !bulkFile}
-              className="bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition"
+              className="bg-indigo-400 cursor-pointer"
             >
               {loading ? "Uploading..." : "Upload & Create Users"}
             </button>
           </div>
-          <p className="mt-4 text-gray-500 text-sm">
-            Upload JSON like: [{"{"} "full_name":"John Doe","email":"john@example.com","role":"student" {"}"}]
-          </p>
         </div>
       </div>
     </div>
