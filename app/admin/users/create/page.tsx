@@ -39,7 +39,7 @@ export default function CreateUserPage() {
     setLoading(true);
 
     try{  
-      const res = await axios.post('/api/create-user', {users: [form]})
+      await axios.post('/api/create-user', {users: [form]})
       alert(`User created! Student ID:`);
       setForm({ full_name: "", email: "", role: "student" });
     } catch(error){
@@ -67,7 +67,7 @@ export default function CreateUserPage() {
     }
     console.log("Parsed users: ", users);
     // 5️⃣ Send to backend API
-    const res = await axios.post("/api/create-user", { users });
+    await axios.post("/api/create-user", { users });
     alert("Bulk users created successfully!");
     setBulkFile(null);
   } catch (err) {
