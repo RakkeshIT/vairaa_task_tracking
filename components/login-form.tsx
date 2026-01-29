@@ -53,42 +53,50 @@ export function LoginForm({
     }))
   }
 
-  const handleSignIn = async () => {
-    if (validateForm()) {
+        const handleSignIn = async () => {
+          if (validateForm()) {
 
-      const { data: user, error } = await supabaseClient
-        .from('users')
-        .select('*')
-        .eq('email', form.email)
-        .single()
+            const { data: user, error } = await supabaseClient
+              .from('users')
+              .select('*')
+              .eq('email', form.email)
+              .single()
 
-      if (error || !user) {
-        alert("User Not Found")
-        return
-      }
 
-      const { data: { session }, error: authError } = await supabaseClient.auth.signInWithPassword(
-        {
-          email: form.email,
-          password: form.password
+            if (error || !user) {
+              alert("User Not Found")
+              return
+            }
+
+             if(!user.confirm_at){
+              alert("You Can not Login. Waiting for Admin Approval")
+              return;
+            }
+            
+            const { data: { session }, error: authError } = await supabaseClient.auth.signInWithPassword(
+              {
+                email: form.email,
+                password: form.password
+              }
+            )
+
+            if (authError || !session) {
+              alert(authError?.message || "Login failed");
+              return;
+            }
+
+           
+
+            await fetch('/api/set-cookie', {
+              method: 'POST',
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ token: session?.access_token })
+            })
+            return router.push('/dashboard')
+          }
         }
-      )
-
-      if (authError || !session) {
-        alert(authError?.message || "Login failed");
-        return;
-      }
-
-      await fetch('/api/set-cookie', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token: session?.access_token })
-      })
-      return router.push('/dashboard')
-    }
-  }
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props} action={handleSignIn}>
       <FieldGroup>

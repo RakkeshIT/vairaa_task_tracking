@@ -29,12 +29,11 @@ export async function POST(req: Request) {
     for (const u of users) {
       const student_id = generateStudentId(++currentCount);
       const password = Math.random().toString(36).slice(-8);
-      const hashingPass = await bcrypt.hash(password, 10)
 
       // Create Supabase Auth User
       const { data: authData, error: authError } = await supabaseRoleClient.auth.admin.createUser({
         email: u.email,
-        password: hashingPass,
+        password: password,
         email_confirm: true,
         user_metadata: { full_name: u.full_name, role: u.role, student_id },
       });
@@ -51,7 +50,9 @@ export async function POST(req: Request) {
         email: u.email,
         role: u.role || 'student',
         student_id,
-        password: hashingPass,
+        password: password,
+        confirm_at: true,
+        created_by: 'admin'
       });
 
       if (dbError) {

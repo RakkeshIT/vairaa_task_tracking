@@ -90,7 +90,9 @@ export function SignupForm({
         email: form.email,
         full_name: form.name,
         password: hashPassword,
+        confirm_at: false,
         role: "student",
+        created_by: "unkown"
       });
 
     if (tableError) {
