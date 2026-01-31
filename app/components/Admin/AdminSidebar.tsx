@@ -202,7 +202,7 @@ export default function AdminSidebar({
           animate={{ opacity: 1 }}
           className="p-4 border-t border-amber-100"
         >
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="relative">
               <img
                 src="/profile.jpg"
@@ -215,7 +215,7 @@ export default function AdminSidebar({
               <p className="font-semibold text-gray-800">Alex Johnson</p>
               <p className="text-xs text-amber-600">Administrator</p>
             </div>
-          </div>
+          </div> */}
         </motion.div>
       )}
     </motion.aside>
