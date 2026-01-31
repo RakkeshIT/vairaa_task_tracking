@@ -111,7 +111,8 @@ export function SignupForm({
         password: hashPassword,
         confirm_at: false,
         role: "student",
-        created_by: "unkown"
+        created_by: "unkown",
+        status: 'pending'
       });
 
     if (tableError) {

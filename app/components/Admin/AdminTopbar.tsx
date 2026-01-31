@@ -1,9 +1,88 @@
 "use client";
 
-import { FiMenu, FiBell, FiSearch, FiHelpCircle } from "react-icons/fi";
+import { FiMenu, FiBell, FiSearch, FiHelpCircle, FiLogOut } from "react-icons/fi";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { supabaseClient } from "@/lib/supabaseClient";
+
+type TopbarUser = {
+  full_name: string;
+  email: string;
+  role: string;
+  avatar_url?: string;
+};
 
 export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => void }) {
+  const [user, setUser] = useState<TopbarUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState(3);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const { user: authUser, error } = await getAuthenticatedUser();
+      
+      if (error) {
+        console.error("Failed to fetch user:", error);
+        // Fallback to session user if available
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+          setUser({
+            full_name: session.user.user_metadata?.full_name || "User",
+            email: session.user.email || "",
+            role: session.user.user_metadata?.role || "User",
+            avatar_url: session.user.user_metadata?.avatar_url
+          });
+        }
+      } else if (authUser) {
+        setUser({
+          full_name: authUser.full_name,
+          email: authUser.email,
+          role: authUser.role,
+          avatar_url: authUser.avatar_url
+        });
+      }
+    } catch (error) {
+      console.error("Error in fetchUserData:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getRoleColor = (role: string) => {
+    const colors: Record<string, string> = {
+      admin: "from-amber-400 to-yellow-400",
+      administrator: "from-amber-400 to-yellow-400",
+      student: "from-blue-400 to-cyan-400",
+      editor: "from-green-400 to-emerald-400",
+      "job seeker": "from-purple-400 to-pink-400",
+      work: "from-indigo-400 to-violet-400"
+    };
+    return colors[role.toLowerCase()] || "from-gray-400 to-gray-500";
+  };
+
   return (
     <header className="h-20 bg-white/90 backdrop-blur-sm border-b border-amber-100 px-6 flex items-center justify-between shadow-sm">
       {/* Left Section */}
@@ -43,6 +122,7 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="relative p-2.5 hover:bg-amber-50 rounded-xl text-gray-600 hover:text-amber-700 transition-all"
+            title="Help Center"
           >
             <FiHelpCircle className="text-xl" />
           </motion.button>
@@ -51,9 +131,23 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="relative p-2.5 hover:bg-amber-50 rounded-xl text-gray-600 hover:text-amber-700 transition-all"
+            title="Notifications"
           >
             <FiBell className="text-xl" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            {notifications > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            )}
+          </motion.button>
+
+          {/* Logout Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            className="p-2.5 hover:bg-red-50 rounded-xl text-gray-600 hover:text-red-600 transition-all hidden md:block"
+            title="Logout"
+          >
+            <FiLogOut className="text-xl" />
           </motion.button>
         </div>
 
@@ -61,41 +155,111 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
         <div className="h-8 w-px bg-gradient-to-b from-transparent via-amber-200 to-transparent hidden md:block"></div>
 
         {/* User Profile */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl hover:bg-amber-50/50 cursor-pointer transition-all"
-        >
-          <div className="relative">
-            <img
-              src="/profile.jpg"
-              alt="Admin"
-              className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-md"
-            />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-full border-2 border-white flex items-center justify-center">
-              <span className="text-xs text-white font-bold">A</span>
+        {loading ? (
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-r from-amber-100 to-yellow-100 animate-pulse"></div>
+            <div className="hidden md:block space-y-2">
+              <div className="w-24 h-3 bg-amber-100 rounded animate-pulse"></div>
+              <div className="w-16 h-2 bg-amber-50 rounded animate-pulse"></div>
             </div>
           </div>
-          
-          <div className="hidden md:block">
-            <p className="font-semibold text-gray-800">Alex Johnson</p>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <p className="text-xs text-amber-600 font-medium">Administrator</p>
+        ) : user ? (
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl hover:bg-amber-50/50 cursor-pointer transition-all group"
+          >
+            <div className="relative">
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.full_name}
+                  className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-md"
+                  onError={(e) => {
+                    // Fallback to initials if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.querySelector('.avatar-fallback')?.classList.remove('hidden');
+                  }}
+                />
+              ) : (
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${getRoleColor(user.role)} flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-md`}>
+                  {getInitials(user.full_name)}
+                </div>
+              )}
+              
+              {/* Fallback avatar (hidden by default) */}
+              <div className={`avatar-fallback hidden w-11 h-11 rounded-xl bg-gradient-to-br ${getRoleColor(user.role)} flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-md`}>
+                {getInitials(user.full_name)}
+              </div>
+              
+              <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${getRoleColor(user.role)} rounded-full border-2 border-white flex items-center justify-center`}>
+                <span className="text-xs text-white font-bold">
+                  {user.role.charAt(0).toUpperCase()}
+                </span>
+              </div>
             </div>
-          </div>
+            
+            <div className="hidden md:block">
+              <p className="font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
+                {user.full_name}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <p className="text-xs text-amber-600 font-medium capitalize">
+                  {user.role}
+                </p>
+              </div>
+            </div>
 
-          {/* Quick Stats */}
-          <div className="hidden lg:flex items-center gap-4 ml-4 pl-4 border-l border-amber-100">
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Projects</p>
-              <p className="font-bold text-gray-800">24</p>
+            {/* Quick Stats */}
+            <div className="hidden lg:flex items-center gap-4 ml-4 pl-4 border-l border-amber-100">
+              <div className="text-center">
+                <p className="text-xs text-gray-500">Today</p>
+                <p className="font-bold text-gray-800">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'short' })}
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-gray-500">Tasks</p>
-              <p className="font-bold text-gray-800">128</p>
+
+            {/* Dropdown Menu (Hidden by default, shows on hover) */}
+            <div className="absolute right-6 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-amber-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="p-3 border-b border-amber-50">
+                <p className="font-medium text-gray-800">{user.full_name}</p>
+                <p className="text-sm text-gray-500 truncate">{user.email}</p>
+              </div>
+              <div className="p-2">
+                <button 
+                  onClick={() => window.location.href = "/profile"}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition-colors"
+                >
+                  View Profile
+                </button>
+                <button 
+                  onClick={() => window.location.href = "/admin/settings"}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition-colors"
+                >
+                  Settings
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors mt-2 border-t border-amber-50 pt-2"
+                >
+                  <FiLogOut className="inline mr-2" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-400 flex items-center justify-center text-white font-bold text-lg">
+              ?
+            </div>
+            <div className="hidden md:block">
+              <p className="font-semibold text-gray-800">Guest User</p>
+              <p className="text-xs text-amber-600 font-medium">Please login</p>
             </div>
           </div>
-        </motion.div>
+        )}
       </div>
     </header>
   );

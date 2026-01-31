@@ -52,7 +52,8 @@ export async function POST(req: Request) {
         student_id,
         password: password,
         confirm_at: true,
-        created_by: 'admin'
+        created_by: 'admin',
+        status: 'active'
       });
 
       if (dbError) {
