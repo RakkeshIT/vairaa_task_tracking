@@ -107,6 +107,20 @@ export default function CreateUserPage() {
       console.log("Error: ", error);
     }
   };
+  const sendMailToStudents = async () => {
+    try {
+      await toast.promise(
+        axios.post('/api/set-password/send-mail'),
+        {
+          loading: 'Sending emails...',
+          success: 'Welcome emails sent successfully!',
+          error: 'Failed to send emails',
+        }
+      );
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
 
   const roles = [
     { value: "student", label: "Student", color: "from-blue-400 to-cyan-400" },
@@ -142,6 +156,7 @@ export default function CreateUserPage() {
           <p className="text-gray-600 mt-1">Add single users or bulk upload via JSON</p>
         </div>
 
+        <div className="flex gap-1">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -149,8 +164,19 @@ export default function CreateUserPage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl hover:shadow-lg transition-all"
         >
           <FiMail className="text-lg" />
+          Send Emails and Pass To Me
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={sendMailToStudents}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl hover:shadow-lg transition-all"
+        >
+          <FiMail className="text-lg" />
           Send Welcome Emails
         </motion.button>
+        </div>
       </div>
 
       {/* Main Content */}
