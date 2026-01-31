@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import crypto from "crypto";
-import { supabaseClient } from "@/lib/supabaseClient";
 import { sendPasswordEmail } from "@/services/sendMail";
+import { supabaseRoleClient } from "@/lib/supabaseRoleClient";
 
 export const runtime = "nodejs"; // IMPORTANT
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1️⃣ Get user
-    const { data: user, error } = await supabaseClient
+    const { data: user, error } = await supabaseRoleClient
       .from("users")
       .select("id")
       .eq("email", email)
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     // 2️⃣ Generate token
     const token = crypto.randomBytes(32).toString("hex");
 
-    await supabaseClient.from("password_resets").insert({
+    await supabaseRoleClient.from("password_resets").insert({
       user_id: user.id,
       token,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),

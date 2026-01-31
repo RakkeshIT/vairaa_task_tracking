@@ -224,7 +224,7 @@ export function SignupForm({
     }
   };
 
-  const buttonHoverVariants = {
+  const buttonHoverVariants: Variants = {
     hover: {
       scale: 1.02,
       transition: {
