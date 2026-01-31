@@ -4,14 +4,15 @@ export async function sendPasswordEmail(email: string, token: string) {
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.ADMIN_EMAIL!,
         pass: process.env.ADMIN_EMAIL_APP_PASSWORD!,
       },
       connectionTimeout: 5000, // prevent long hanging
     });
+    
 
     const URL =
       process.env.NODE_ENV === "production"
