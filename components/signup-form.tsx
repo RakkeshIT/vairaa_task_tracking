@@ -396,7 +396,7 @@ export function SignupForm({
               <div className="pl-10 pr-6 py-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/40 shadow-lg">
                 <blockquote className="space-y-4">
                   <p className="text-2xl font-bold text-gray-800 leading-relaxed bg-gradient-to-r from-amber-600 to-purple-600 bg-clip-text text-transparent">
-                    "Success starts with self-belief"
+                    Success starts with self-belief
                   </p>
                   <p className="text-gray-600 font-medium">
                     Every great coder began with a single line of code. Your journey to mastery begins here.

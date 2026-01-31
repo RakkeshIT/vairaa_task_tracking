@@ -3,17 +3,13 @@ import nodemailer from "nodemailer";
 export async function sendPasswordEmail(email: string, token: string) {
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      service: "gmail",
       auth: {
         user: process.env.ADMIN_EMAIL!,
         pass: process.env.ADMIN_EMAIL_APP_PASSWORD!,
       },
-      connectionTimeout: 5000, // prevent long hanging
     });
-    
-
+  
     const URL =
       process.env.NODE_ENV === "production"
         ? process.env.NEXT_PUBLIC_FRONTEND_URL

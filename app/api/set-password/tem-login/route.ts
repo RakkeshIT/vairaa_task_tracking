@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import crypto from "crypto";
-import { sendPasswordEmail } from "@/services/sendMail";
 import { supabaseRoleClient } from "@/lib/supabaseRoleClient";
+import { sendPasswordEmail } from "@/app/services/sendMail";
 
 export const runtime = "nodejs"; // IMPORTANT
 
