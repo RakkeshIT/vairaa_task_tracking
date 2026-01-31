@@ -53,12 +53,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { error: userError } = await supabaseClient
+    const { error: userError } = await supabaseRoleClient
       .from("users")
       .update({
         password: hashPassword,
       })
       .eq("id", userId);
+
     if (userError) {
       return NextResponse.json(
         {
