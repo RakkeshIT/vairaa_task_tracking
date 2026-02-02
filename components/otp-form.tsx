@@ -15,7 +15,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { useState } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabaseClient } from "@/lib/supabaseClient"
 
 export default function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
@@ -23,35 +23,6 @@ export default function OTPForm({ className, ...props }: React.ComponentProps<"d
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
   const router = useRouter()
-  const handleVerify = async () => {
-    const { data, error } = await supabaseClient
-      .from('otp_codes')
-      .select('*')
-      .eq('email', email)
-      .eq('otp', parseInt(otp))
-      .single()
-
-    if (error) {
-      alert(error.message)
-      console.log(error.message)
-      return;
-    }
-
-    console.log("Now:", new Date());
-    console.log("DB Expiry:", data.expiry);
-    console.log("DB Expiry as Date:", new Date(data.expiry));
-
-
-    if (Date.now() > new Date(data.expiry).getTime()) {
-      alert("OTP Expired");
-      return;
-    }
-    alert("OTP Verified! Redirecting to dashboard...");
-    router.push("/dashboard");
-
-    // Optionally delete used OTP
-    await supabaseClient.from("otp_codes").delete().eq("id", data.id);
-  }
   return (
     <div
       className={cn("flex flex-col gap-6 md:min-h-[450px]", className)}
@@ -59,7 +30,7 @@ export default function OTPForm({ className, ...props }: React.ComponentProps<"d
     >
       <Card className="flex-1 overflow-hidden p-0">
         <CardContent className="grid flex-1 p-0 md:grid-cols-2">
-          <form className="flex flex-col items-center justify-center p-6 md:p-8" action={handleVerify}>
+          <form className="flex flex-col items-center justify-center p-6 md:p-8">
             <FieldGroup>
               <Field className="items-center text-center">
                 <h1 className="text-2xl font-bold">Enter verification code</h1>
