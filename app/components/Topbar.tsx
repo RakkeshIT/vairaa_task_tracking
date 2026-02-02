@@ -4,6 +4,7 @@ import { FiBell, FiSearch, FiSettings, FiUser, FiCamera } from "react-icons/fi";
 import { useState, useEffect } from 'react';
 import { supabaseClient } from "@/lib/supabaseClient";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type TopbarUser = {
   full_name: string;
@@ -19,7 +20,7 @@ export default function Topbar() {
   const [loading, setLoading] = useState(true);
   const [profileImageError, setProfileImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const router = useRouter()
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -222,19 +223,18 @@ export default function Topbar() {
 
                 <div className="p-2">
                   <button
-                    onClick={() => window.location.href = "/profile"}
+                    onClick={() => router.push("/dashboard/profile")}
                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-3"
                   >
                     <FiUser className="text-amber-500" />
                     View Profile
                   </button>
-                  <button
-                    onClick={() => window.location.href = "/settings"}
+                  {/* <button
                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-3"
                   >
                     <FiSettings className="text-amber-500" />
                     Account Settings
-                  </button>
+                  </button> */}
                   {!user?.avatar_url && (
                     <button
                       onClick={() => window.location.href = "/profile?tab=photos"}
