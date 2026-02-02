@@ -18,13 +18,13 @@ import { useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { supabaseClient } from "@/lib/supabaseClient"
 
-export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
+export default function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
   const [otp, setOtp] = useState('')
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
   const router = useRouter()
   const handleVerify = async () => {
-    const { data, error }: any = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('otp_codes')
       .select('*')
       .eq('email', email)

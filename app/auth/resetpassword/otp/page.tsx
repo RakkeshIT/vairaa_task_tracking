@@ -1,4 +1,4 @@
-import { OTPForm } from '@/components/otp-form'
+import OTPForm from '@/components/otp-form'
 import React from 'react'
 
 export default function OtpPage (){
