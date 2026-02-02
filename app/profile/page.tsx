@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import { LuCircle } from "react-icons/lu";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 type UserProfile = {
   id: string;
@@ -71,10 +72,11 @@ export default function SimpleProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/profile');
+      const response = await axios.get('/api/profile', { withCredentials: true });
       
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status == 200) {
+        const data = response.data;
+        console.log("User data: ", data)
         setProfile({
           id: data.id || "",
           full_name: data.full_name || "",

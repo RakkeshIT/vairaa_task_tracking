@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { supabaseClient } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 type TopbarUser = {
   full_name: string;
@@ -17,50 +19,41 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
   const [user, setUser] = useState<TopbarUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState(3);
-
+  const router = useRouter()
   useEffect(() => {
     fetchUserData();
   }, []);
-
-  const fetchUserData = async () => {
+  
+    const fetchUserData = async () => {
     try {
-      const { user: authUser, error } = await getAuthenticatedUser();
-      
-      if (error) {
-        console.error("Failed to fetch user:", error);
-        // Fallback to session user if available
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session?.user) {
-          setUser({
-            full_name: session.user.user_metadata?.full_name || "User",
-            email: session.user.email || "",
-            role: session.user.user_metadata?.role || "User",
-            avatar_url: session.user.user_metadata?.avatar_url
-          });
-        }
-      } else if (authUser) {
+      const res = await axios.get("/api/auth-user")
+      const authUser = res.data.user;
+      console.log("Auth User: ", authUser)
+      if (res.status == 200) {
         setUser({
-          full_name: authUser.full_name,
-          email: authUser.email,
-          role: authUser.role,
-          avatar_url: authUser.avatar_url
+          ...authUser,
+          student_id: authUser.student_id || ''
         });
+      } else {
+        setUser(null);
       }
     } catch (error) {
-      console.error("Error in fetchUserData:", error);
+      console.error("Error fetching user:", error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+
   const handleLogout = async () => {
-    try {
-      await supabaseClient.auth.signOut();
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
+     const res = await axios.delete('/api/set-cookie');
+     const data = res.data;
+     if(data.success) {
+       console.log("Logout Success");
+       router.push('/auth/login');
+     }
+   };
 
   const getInitials = (name: string) => {
     return name
@@ -126,7 +119,7 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
           >
             <FiHelpCircle className="text-xl" />
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -185,19 +178,19 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
                   {getInitials(user.full_name)}
                 </div>
               )}
-              
+
               {/* Fallback avatar (hidden by default) */}
               <div className={`avatar-fallback hidden w-11 h-11 rounded-xl bg-gradient-to-br ${getRoleColor(user.role)} flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-md`}>
                 {getInitials(user.full_name)}
               </div>
-              
+
               <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${getRoleColor(user.role)} rounded-full border-2 border-white flex items-center justify-center`}>
                 <span className="text-xs text-white font-bold">
                   {user.role.charAt(0).toUpperCase()}
                 </span>
               </div>
             </div>
-            
+
             <div className="hidden md:block">
               <p className="font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
                 {user.full_name}
@@ -227,19 +220,19 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
                 <p className="text-sm text-gray-500 truncate">{user.email}</p>
               </div>
               <div className="p-2">
-                <button 
-                  onClick={() => window.location.href = "/profile"}
+                <button
+                  onClick={() => router.push("/admin/profile")}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition-colors"
                 >
                   View Profile
                 </button>
-                <button 
+                <button
                   onClick={() => window.location.href = "/admin/settings"}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition-colors"
                 >
                   Settings
                 </button>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors mt-2 border-t border-amber-50 pt-2"
                 >

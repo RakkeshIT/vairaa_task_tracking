@@ -1,10 +1,10 @@
 // app/api/get-users/route.ts
-import { supabaseClient } from "@/lib/supabaseClient"
+import { supabaseRoleClient } from "@/lib/supabaseRoleClient"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
   try {
-    const { data: users, error } = await supabaseClient
+    const { data: users, error } = await supabaseRoleClient
       .from('users')
       .select('*')
       .neq("role", 'admin')

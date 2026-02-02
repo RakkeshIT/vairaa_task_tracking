@@ -2,8 +2,8 @@
 
 import { FiBell, FiSearch, FiSettings, FiUser, FiCamera } from "react-icons/fi";
 import { useState, useEffect } from 'react';
-import { getAuthenticatedUser } from "@/lib/auth";
 import { supabaseClient } from "@/lib/supabaseClient";
+import axios from "axios";
 
 type TopbarUser = {
   full_name: string;
@@ -14,7 +14,7 @@ type TopbarUser = {
 };
 
 export default function Topbar() {
-  const [notifications] = useState(3); 
+  const [notifications] = useState(3);
   const [user, setUser] = useState<TopbarUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileImageError, setProfileImageError] = useState(false);
@@ -24,30 +24,26 @@ export default function Topbar() {
     fetchUserData();
   }, []);
 
-const fetchUserData = async () => {
-  try {
-    const { user: authUser, error } = await getAuthenticatedUser();
-    
-    if (error) {
-      console.error("Failed to fetch user:", error);
-      setUser(null); // Or set to guest user
-    } else if (authUser) {
-      // Your reusable function should already include student_id 
-      // in the UserProfile type if it's in your users table
-      setUser({
-        ...authUser,
-        student_id: authUser.student_id || '' 
-      });
-    } else {
+  const fetchUserData = async () => {
+    try {
+      const res = await axios.get("/api/auth-user")
+      const authUser = res.data.user;
+      console.log("Auth User: ", authUser)
+      if (res.status == 200) {
+        setUser({
+          ...authUser,
+          student_id: authUser.student_id || ''
+        });
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
       setUser(null);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   const getInitials = (name: string) => {
     if (!name) return "U";
     return name
@@ -77,7 +73,7 @@ const fetchUserData = async () => {
 
   return (
     <div className="flex items-center justify-between bg-gradient-to-r from-white to-amber-50/30 h-16 px-6 border-b border-amber-100 shadow-sm">
-      
+
       {/* Left side - Search Bar */}
       <div className="flex items-center flex-1 max-w-2xl">
         <form onSubmit={handleSearch} className="relative w-full">
@@ -102,7 +98,7 @@ const fetchUserData = async () => {
 
       {/* Right side - Icons & Profile */}
       <div className="ml-auto flex items-center gap-6">
-        
+
         {/* Notifications */}
         <div className="relative group">
           <button className="relative p-2.5 rounded-xl hover:bg-amber-50 transition-all duration-200">
@@ -113,7 +109,7 @@ const fetchUserData = async () => {
               </span>
             )}
           </button>
-          
+
           {/* Notifications Dropdown */}
           <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-amber-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
             <div className="p-4 border-b border-amber-50">
@@ -166,11 +162,11 @@ const fetchUserData = async () => {
                     {getInitials(user?.full_name || "User")}
                   </div>
                 )}
-                
+
                 {/* Online Status Indicator */}
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
-              
+
               <div className="hidden md:block">
                 <h3 className="text-amber-800 font-semibold text-sm">
                   {user?.full_name || "Guest User"}
@@ -179,7 +175,7 @@ const fetchUserData = async () => {
                   {user?.email ? user.email.split('@')[0] : "Click to login"}
                 </p>
                 <p className="text-amber-600 text-xs">
-                  {user?.student_id || "" }
+                  {user?.student_id || ""}
                 </p>
               </div>
             </div>
@@ -223,16 +219,16 @@ const fetchUserData = async () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-2">
-                  <button 
+                  <button
                     onClick={() => window.location.href = "/profile"}
                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-3"
                   >
                     <FiUser className="text-amber-500" />
                     View Profile
                   </button>
-                  <button 
+                  <button
                     onClick={() => window.location.href = "/settings"}
                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-3"
                   >
@@ -240,7 +236,7 @@ const fetchUserData = async () => {
                     Account Settings
                   </button>
                   {!user?.avatar_url && (
-                    <button 
+                    <button
                       onClick={() => window.location.href = "/profile?tab=photos"}
                       className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-3 border-t border-amber-50 mt-2 pt-2"
                     >
@@ -251,7 +247,7 @@ const fetchUserData = async () => {
                       </div>
                     </button>
                   )}
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors flex items-center gap-3 mt-2 border-t border-amber-50 pt-2"
                   >

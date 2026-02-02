@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-
+    
     const response = NextResponse.json({ success: true });
 
     response.cookies.set({

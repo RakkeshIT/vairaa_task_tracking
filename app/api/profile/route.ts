@@ -1,170 +1,176 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseClient } from "@/lib/supabaseClient";
-import { jwtVerify } from "jose"; // For JWT verification
+import { jwtVerify } from "jose";
+import { supabaseRoleClient } from "@/lib/supabaseRoleClient";
 
+/**
+ * GET /api/profile
+ * Fetch authenticated user details + profile
+ */
 export async function GET(req: NextRequest) {
   try {
-    // Get the JWT token from cookies
     const authCookie = req.cookies.get("auth-cookie")?.value;
-    
     if (!authCookie) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized - No token" },
+        { status: 401 },
+      );
     }
 
-    // Verify the JWT token
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fallback-secret');
-    
-    try {
-      const { payload } = await jwtVerify(authCookie, secret);
-      
-      // Now you can access the user ID from the token payload
-      const userId = payload.sub; // 'sub' is usually the user ID in JWT
-      
-      if (!userId) {
-        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-      }
-
-      // Get user data with profile
-      const { data: userData, error: userError } = await supabaseClient
-        .from('users')
-        .select(`
-          *,
-          user_profiles (*)
-        `)
-        .eq('id', userId)
-        .single();
-
-      if (userError) {
-        console.error("User fetch error:", userError);
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      // Get activity logs
-      const { data: activities } = await supabaseClient
-        .from('activity_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      // Format response
-      const profileData = {
-        ...userData,
-        profile: userData.user_profiles?.[0] || {},
-        activities: activities || []
-      };
-
-      return NextResponse.json(profileData);
-
-    } catch (jwtError) {
-      console.error("JWT verification error:", jwtError);
+    // Verify user via Supabase Auth
+    const {
+      data: { user },
+      error,
+    } = await supabaseRoleClient.auth.getUser(authCookie);
+    if (error || !user) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
+    // Fetch user info from custom 'users' table
+    const { data: userDetails } = await supabaseRoleClient
+      .from("users")
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    const userId = userDetails.id;
+    // Fetch profile info from 'user_profiles'
+    const { data: userProfile } = await supabaseRoleClient
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    return NextResponse.json({
+      user: userDetails || user, // fallback to Auth user if no row in 'users'
+      profile: userProfile,
+    });
   } catch (error) {
     console.error("Profile fetch error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
+/**
+ * PUT /api/profile
+ * Update authenticated user info + profile
+ */
 export async function PUT(req: NextRequest) {
   try {
-    // Get the JWT token from cookies
+    const body = await req.json();
     const authCookie = req.cookies.get("auth-cookie")?.value;
-    
+    console.log("Body: ", body);
     if (!authCookie) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized - No token" },
+        { status: 401 },
+      );
     }
 
-    // Verify the JWT token
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fallback-secret');
-    
-    const { payload } = await jwtVerify(authCookie, secret);
-    const userId = payload.sub;
-    
-    if (!userId) {
+    // Verify user via Supabase Auth
+    const {
+      data: { user },
+      error,
+    } = await supabaseRoleClient.auth.getUser(authCookie);
+    if (error || !user) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const userEmail = user.email;
+    // Update or create user info in 'users'
+    const { data: updatedUser, error: userError } = await supabaseRoleClient
+      .from("users")
+      .upsert(
+        {
+          email: userEmail,
+          phone: body.phone,
+          location: body.location,
+          bio: body.bio,
+          department: body.department,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email" },
+      )
+      .select("*")
+      .maybeSingle();
 
-    // Update basic user info
-    const { data: updatedUser, error: userError } = await supabaseClient
-      .from('users')
-      .update({
-        full_name: body.full_name,
-        phone: body.phone,
-        location: body.location,
-        bio: body.bio,
-        department: body.department,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select()
-      .single();
+    const userId = updatedUser.id;
+    console.log("User If form Profile: ", userId);
 
     if (userError) {
       return NextResponse.json({ error: userError.message }, { status: 500 });
     }
 
     // Update or create profile
-    const { data: existingProfile } = await supabaseClient
-      .from('user_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
+    const { data: existingProfile } = await supabaseRoleClient
+      .from("user_profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
 
     let profileData;
     if (existingProfile) {
-      // Update existing profile
-      const { data: updatedProfile } = await supabaseClient
-        .from('user_profiles')
+      const { data: updatedProfile, error: updateError } = await supabaseRoleClient
+        .from("user_profiles")
         .update({
-          linkedin_url: body.linkedin_url,
-          twitter_url: body.twitter_url,
-          github_url: body.github_url,
-          email_notifications: body.email_notifications,
-          push_notifications: body.push_notifications,
-          two_factor_auth: body.two_factor_auth,
-          updated_at: new Date().toISOString()
+          phone: body.phone || "",
+          location: body.location || "",
+          bio: body.bio || "",
+          department: body.department || "",
+          linkedin_url: body.linkedin_url || "",
+          twitter_url: body.twitter_url || "",
+          github_url: body.github_url || "",
+          email_notifications: body.email_notifications ?? false,
+          push_notifications: body.push_notifications ?? false,
+          two_factor_auth: body.two_factor_auth ?? false,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', existingProfile.id)
-        .select()
-        .single();
+        .eq("user_id", userId)
+        .select("*")
+        .maybeSingle();
+
+      if (updateError) console.error("Profile update error:", updateError);
       profileData = updatedProfile;
     } else {
-      // Create new profile
-      const { data: newProfile } = await supabaseClient
-        .from('user_profiles')
+      const { data: newProfile, error: profileError } = await supabaseRoleClient
+        .from("user_profiles")
         .insert({
           user_id: userId,
-          linkedin_url: body.linkedin_url,
-          twitter_url: body.twitter_url,
-          github_url: body.github_url,
-          email_notifications: body.email_notifications,
-          push_notifications: body.push_notifications,
-          two_factor_auth: body.two_factor_auth
+          phone: body.phone || "",
+          location: body.location || "",
+          bio: body.bio || "",
+          department: body.department || "",
+          linkedin_url: body.linkedin_url || "",
+          twitter_url: body.twitter_url || "",
+          github_url: body.github_url || "",
+          email_notifications: body.email_notifications ?? false,
+          push_notifications: body.push_notifications ?? false,
+          two_factor_auth: body.two_factor_auth ?? false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
-        .select()
-        .single();
+        .select("*") // fetch full row back
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile insert error:", profileError);
+      }
       profileData = newProfile;
     }
 
     // Log activity
-    await supabaseClient
-      .from('activity_logs')
-      .insert({
-        user_id: userId,
-        action: 'profile_updated',
-        details: 'Updated profile information'
-      });
-
-    return NextResponse.json({
-      success: true,
-      user: updatedUser,
-      profile: profileData
+    await supabaseRoleClient.from("activity_logs").insert({
+      user_id: userId,
+      action: "profile_updated",
+      details: "Updated profile information",
     });
 
+    return NextResponse.json(
+      {
+        user: updatedUser,
+        profile: profileData,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

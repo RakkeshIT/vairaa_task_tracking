@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { FiMail, FiLock, FiArrowRight, FiCheckCircle, FiUsers, FiBarChart2, FiShield } from "react-icons/fi"
 import { LuSparkles } from "react-icons/lu"
+import Logo from '/logo.png'
 
 type props = {
   email: string
@@ -230,12 +231,12 @@ export function LoginForm({
                   <input type="checkbox" className="rounded border-amber-300 text-amber-500 focus:ring-amber-200" />
                   Remember me
                 </label>
-                <a
-                  href="/auth/forgot-password"
+                <Link
+                  href="/auth/resetpassword/otp"
                   className="text-sm text-amber-600 hover:text-amber-700 font-medium"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
 
               {/* Login Button */}
