@@ -26,6 +26,7 @@ export async function GET() {
       .eq("user_id", userId)
       .maybeSingle();
 
+
     if (profileError) {
       console.log("Profile data Error: ", profileError?.message);
       return NextResponse.json({ error: profileError?.message }, { status: 500 });
