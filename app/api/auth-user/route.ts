@@ -26,9 +26,9 @@ export async function GET() {
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (!profileData || profileError) {
+    if (profileError) {
       console.log("Profile data Error: ", profileError?.message);
-      return NextResponse.json({ error: "Profile not fetch" }, { status: 500 });
+      return NextResponse.json({ error: profileError?.message }, { status: 500 });
     }
 
     return NextResponse.json(
