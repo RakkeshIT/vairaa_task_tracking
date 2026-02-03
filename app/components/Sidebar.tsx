@@ -19,9 +19,9 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
     { name: "Overview", icon: <FiHome />, href: "/dashboard" },
     { name: "Daily Topics", icon: <FiBook />, href: "/dashboard/topics" },
     { name: "Tasks", icon: <FiCheckSquare />, href: "/dashboard/tasks" },
-    { name: "Stats", icon: <FiBarChart2 />, href: "/dashboard/stats" },
-    { name: "Profile", icon: <FiUser />, href: "/dashboard/profile" },
-    { name: "Settings", icon: <FiSettings />, href: "/dashboard/settings" },
+    // { name: "Stats", icon: <FiBarChart2 />, href: "/dashboard/stats" },
+    // { name: "Profile", icon: <FiUser />, href: "/dashboard/profile" },
+    // { name: "Settings", icon: <FiSettings />, href: "/dashboard/settings" },
   ];
   const router = useRouter();
 

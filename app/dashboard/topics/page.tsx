@@ -5,6 +5,7 @@ import { supabaseClient } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { FiBook, FiClock, FiCalendar, FiSearch, FiEdit, FiTrash2, FiEye, FiPlus, FiFilter } from "react-icons/fi";
 import Link from "next/link";
+import { Link2Icon } from "lucide-react";
 
 export default function TopicsTablePage() {
     const [topics, setTopics] = useState<any[]>([]);
@@ -235,7 +236,10 @@ export default function TopicsTablePage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
                                         </th>
-    
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Notes
+                                        </th>
+
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -248,7 +252,7 @@ export default function TopicsTablePage() {
                                             className="hover:bg-gray-50 transition-colors"
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-mono text-gray-500">#{topic.id}</div>
+                                                <div className="text-sm font-mono text-gray-500">{index + 1}</div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center">
@@ -284,11 +288,33 @@ export default function TopicsTablePage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${topic.status === "active"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-red-100 text-red-800"
+                                                    ? "bg-green-100 text-green-800"
+                                                    : "bg-red-100 text-red-800"
                                                     }`}>
                                                     {topic.status === "active" ? "Active" : "Inactive"}
                                                 </span>
+                                            </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {topic.notes_link ? (
+                                                        <Link
+                                                            href={topic.notes_link}
+                                                            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                            title="View"
+                                                            target="_blank"
+                                                        >
+                                                            <Link2Icon className="w-4 h-4" />
+                                                        </Link>
+                                                    ) : (
+                                                        <span
+                                                            className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                                                            title="No notes available"
+                                                        >
+                                                            <Link2Icon className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                         </motion.tr>
                                     ))}

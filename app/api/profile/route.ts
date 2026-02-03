@@ -3,6 +3,9 @@ import { jwtVerify } from "jose";
 import { supabaseRoleClient } from "@/lib/supabaseRoleClient";
 import cloudinary from "@/lib/cloudinary";
 import { Upload } from "lucide-react";
+interface FormFields {
+  [key: string]: string | number | boolean
+}
 
 /**
  * GET /api/profile
@@ -73,7 +76,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const fields: any = {};
+    const fields: FormFields = {};
     const keys = [
       "user_id",
       "phone",

@@ -48,7 +48,7 @@ export default function AdminSidebar({
       subItems: [
         { label: "Create Topic", href: "/admin/topics/create" },
         { label: "View Topics", href: "/admin/topics/view" },
-        { label: "Analytics", href: "/admin/topics/analytics" }
+        { label: "Upload Notes", href: "/admin/topics/upload-notes" }
       ]
     },
     {
