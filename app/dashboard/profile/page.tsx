@@ -15,11 +15,13 @@ import {
   FiBook,
   FiLinkedin,
   FiTwitter,
-  FiGithub
+  FiGithub,
+  FiUpload
 } from "react-icons/fi";
 import { LuCircle } from "react-icons/lu";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import Image from "next/image";
 
 type UserProfile = {
   full_name: string;
@@ -42,7 +44,8 @@ export default function SimpleProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [file, setFile] = useState<File | null>(null)
+  const [previewImage, setPreviewImage] = useState<string>()
   const [profile, setProfile] = useState<UserProfile>({
     full_name: "",
     email: "",
@@ -117,7 +120,22 @@ export default function SimpleProfilePage() {
       setLoading(false);
     }
   };
-
+    const handleFillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files?.[0]
+      if (!files) {
+        setFile(null)
+        return;
+      }
+      console.log("Profile Image: ", files)
+      setFile(files)
+      // create preview image
+      const reader = new FileReader()
+  
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string)
+      }
+      reader.readAsDataURL(files)
+    }
   const handleEditToggle = () => {
     if (isEditing) {
       setFormData(profile);
@@ -125,10 +143,21 @@ export default function SimpleProfilePage() {
     setIsEditing(!isEditing);
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
+    if (!formData) return;
+    setSaving(true);
     try {
-      setSaving(true);
-      const response = await axios.put("/api/profile", formData)
+      const form = new FormData()
+      Object.entries(formData).forEach(([key,val]) => {
+        if(val && key !== 'file' ) form.append(key, val as string)
+      })
+
+      if(file){
+        form.append("avatar", file)
+      }
+      const response = await axios.put("/api/profile", form, {
+        headers: {"Content-Type": "multipar/form-data"}
+      })
       console.log("Form Data: ", formData)
       if (response.status == 200) {
         const data = response.data;
@@ -244,21 +273,50 @@ export default function SimpleProfilePage() {
         <div className="p-6 border-b border-amber-50">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             {/* Avatar */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-md overflow-hidden bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center">
-                {profile.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.full_name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-3xl font-bold text-amber-600">
-                    {getInitials(profile.full_name)}
-                  </span>
-                )}
-              </div>
-            </div>
+              <div className="relative">
+                 <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-md overflow-hidden bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center">
+                   {/* Show preview image if exists, otherwise show saved image or initials */}
+                   {previewImage ? (
+                     <img
+                       src={previewImage}
+                       alt="Preview"
+                       className="w-full h-full object-cover"
+                     />
+                   ) : profile.avatar_url ? (
+                     <Image
+                       src={profile.avatar_url}
+                       alt={profile.full_name}
+                       width={96}
+                       height={96}
+                       className="w-full h-full object-cover"
+                     />
+                   ) : (
+                     <span className="text-3xl font-bold text-amber-600">
+                       {getInitials(profile.full_name)}
+                     </span>
+                   )}
+                 </div>
+           
+                 {/* Upload Button - Shows only when editing */}
+                 {isEditing && (
+                   <label className="absolute bottom-0 right-0 cursor-pointer">
+                     <input
+                       type="file"
+                       accept="image/*"  // Changed from "*" to "image/*" for better UX
+                       className="hidden"
+                       onChange={handleFillChange}
+                     />
+                     <motion.div
+                       whileHover={{ scale: 1.1 }}
+                       whileTap={{ scale: 0.95 }}
+                       className="p-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
+                       title="Upload profile picture"
+                     >
+                       <FiUpload className="text-sm" />
+                     </motion.div>
+                   </label>
+                 )}
+               </div>
 
             {/* User Info */}
             <div className="flex-1">
