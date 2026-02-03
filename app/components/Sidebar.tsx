@@ -21,7 +21,7 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
     { name: "Overview", icon: <FiHome />, href: "/dashboard" },
     { name: "Daily Topics", icon: <FiBook />, href: "/dashboard/topics" },
     { name: "Tasks", icon: <FiCheckSquare />, href: "/dashboard/tasks" },
-    // { name: "My Activities", icon: <ActivityIcon />, href: "/dashboard/my-activities" },
+    { name: "My Activities", icon: <ActivityIcon />, href: "/dashboard/my-activities" },
     // { name: "Profile", icon: <FiUser />, href: "/dashboard/profile" },
     // { name: "Settings", icon: <FiSettings />, href: "/dashboard/settings" },
   ];
