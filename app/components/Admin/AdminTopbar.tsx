@@ -31,7 +31,7 @@ export default function AdminTopbar({ toggleSidebar }: { toggleSidebar: () => vo
     const fetchUserData = async () => {
     try {
       const res = await axios.get("/api/auth-user")
-      const authUser = res.data;
+      const authUser = res.data.data;
       const profileData = authUser.profileData || {}
       console.log("Auth User: ", res.data)
       if (res.status == 200) {
