@@ -33,7 +33,6 @@ export default function TopicsTablePage() {
             setLoading(false);
         }
     };
-
     // Filter topics
     const filteredTopics = topics.filter(topic => {
         const matchesSearch =
