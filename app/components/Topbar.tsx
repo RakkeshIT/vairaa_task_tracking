@@ -57,8 +57,8 @@ export default function Topbar() {
 
   const handleLogout = async () => {
     try {
-      await supabaseClient.auth.signOut();
-      window.location.href = "/login";
+      await axios.delete('/api/set-cookie');
+      router.push("/auth/login");
     } catch (error) {
       console.error("Logout error:", error);
     }

@@ -28,12 +28,18 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch user info from custom 'users' table
-    const { data: userDetails } = await supabaseRoleClient
+    const { data: userDetails, error: userDetailsError } = await supabaseRoleClient
       .from("users")
       .select("*")
       .eq("email", user.email)
       .maybeSingle();
-
+     if (userDetailsError || !userDetails) {
+      console.error("User upsert error:", userDetailsError);
+      return NextResponse.json(
+        { error: userDetailsError?.message },
+        { status: 500 },
+      );
+    }
     const userId = userDetails.id;
     // Fetch profile info from 'user_profiles'
     const { data: userProfile } = await supabaseRoleClient
@@ -119,6 +125,7 @@ export async function PUT(req: NextRequest) {
           phone: fields.phone,
           bio: fields.bio,
           location: fields.location,
+          department: fields.department,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "email" },
