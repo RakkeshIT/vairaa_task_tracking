@@ -129,16 +129,12 @@ export async function PUT(req: NextRequest) {
     if (userError || !updatedUser) {
       console.error("User upsert error:", userError);
       return NextResponse.json(
-        { error: "User update failed" },
+        { error: userError?.message },
         { status: 500 },
       );
     }
     const userId = updatedUser.id;
     console.log("User If form Profile: ", userId);
-
-    if (userError) {
-      return NextResponse.json({ error: userError.message }, { status: 500 });
-    }
     console.log("Fields: ", fields);
     // Update or create profile
     const { data: profileData, error: profileError } = await supabaseRoleClient
