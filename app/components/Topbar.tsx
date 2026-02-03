@@ -237,7 +237,7 @@ export default function Topbar() {
                   </button> */}
                   {!user?.avatar_url && (
                     <button
-                      onClick={() => window.location.href = "/profile?tab=photos"}
+                      onClick={() => router.push("/profile?tab=photos")}
                       className="w-full text-left px-4 py-3 rounded-lg hover:bg-amber-50 text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-3 border-t border-amber-50 mt-2 pt-2"
                     >
                       <FiCamera className="text-blue-500" />
