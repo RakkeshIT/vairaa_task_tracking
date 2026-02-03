@@ -5,13 +5,16 @@ import { useState, useEffect } from 'react';
 import { supabaseClient } from "@/lib/supabaseClient";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type TopbarUser = {
-  full_name: string;
-  email: string;
-  role: string;
-  avatar_url?: string;
+  user: {
+    full_name: string;
+    email: string;
+    role: string;
+  }
   student_id: string;
+  avatar_url?: string;
 };
 
 export default function Topbar() {
@@ -28,12 +31,13 @@ export default function Topbar() {
   const fetchUserData = async () => {
     try {
       const res = await axios.get("/api/auth-user")
-      const authUser = res.data.user;
+      const authUser = res.data.data;
       console.log("Auth User: ", authUser)
       if (res.status == 200) {
         setUser({
           ...authUser,
-          student_id: authUser.student_id || ''
+          student_id: authUser.user.student_id || '',
+          avatar_url: authUser.profileData.avatar_url || ''
         });
       } else {
         setUser(null);
@@ -99,7 +103,6 @@ export default function Topbar() {
 
       {/* Right side - Icons & Profile */}
       <div className="ml-auto flex items-center gap-6">
-
         {/* Notifications */}
         <div className="relative group">
           <button className="relative p-2.5 rounded-xl hover:bg-amber-50 transition-all duration-200">
@@ -152,15 +155,17 @@ export default function Topbar() {
             <div className="flex items-center gap-3 ml-2 p-1.5 pr-4 rounded-xl hover:bg-amber-50/80 transition-all duration-200 cursor-pointer">
               <div className="relative">
                 {user?.avatar_url && !profileImageError ? (
-                  <img
+                  <Image
                     src={user.avatar_url}
-                    alt={user.full_name}
+                    alt={user.user.full_name}
                     className="w-10 h-10 rounded-xl object-cover border-2 border-amber-300 shadow-sm"
+                    width={96}
+                    height={96}
                     onError={() => setProfileImageError(true)}
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 flex items-center justify-center text-white font-bold text-lg border-2 border-amber-300 shadow-sm">
-                    {getInitials(user?.full_name || "User")}
+                    {getInitials(user?.user.full_name || "User")}
                   </div>
                 )}
 
@@ -170,10 +175,10 @@ export default function Topbar() {
 
               <div className="hidden md:block">
                 <h3 className="text-amber-800 font-semibold text-sm">
-                  {user?.full_name || "Guest User"}
+                  {user?.user.full_name || "Guest User"}
                 </h3>
                 <p className="text-amber-600 text-xs">
-                  {user?.email ? user.email.split('@')[0] : "Click to login"}
+                  {user?.user.email ? user?.user.email.split('@')[0] : "Click to login"}
                 </p>
                 <p className="text-amber-600 text-xs">
                   {user?.student_id || ""}
@@ -203,20 +208,22 @@ export default function Topbar() {
                 <div className="p-4 border-b border-amber-50">
                   <div className="flex items-center gap-3">
                     {user?.avatar_url && !profileImageError ? (
-                      <img
+                      <Image
                         src={user.avatar_url}
-                        alt={user.full_name}
-                        className="w-12 h-12 rounded-xl object-cover border-2 border-amber-300"
+                        alt={user?.user.full_name}
+                        className="rounded-xl object-cover border-2 border-amber-300"
+                        width={96}
+                        height={96}
                         onError={() => setProfileImageError(true)}
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 flex items-center justify-center text-white font-bold text-xl">
-                        {getInitials(user.full_name)}
+                        {getInitials(user?.user.full_name)}
                       </div>
                     )}
                     <div>
-                      <h4 className="font-semibold text-amber-800">{user.full_name}</h4>
-                      <p className="text-xs text-amber-600 truncate">{user.email}</p>
+                      <h4 className="font-semibold text-amber-800">{user?.user.full_name}</h4>
+                      <p className="text-xs text-amber-600 truncate">{user?.user.email}</p>
                     </div>
                   </div>
                 </div>

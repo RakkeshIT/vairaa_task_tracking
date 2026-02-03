@@ -7,7 +7,8 @@ import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import axios from 'axios';
 import { useState } from 'react';
-
+import Image from "next/image";
+import Logo from '../assets/logo.png'
 interface SidebarProps {
   open: boolean;
   toggleSidebar: () => void;
@@ -55,8 +56,13 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
       {/* Logo Section */}
       <div className="flex items-center justify-center h-20 border-b border-amber-200 px-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-lg flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-xl">V</span>
+          <div className="w-10 h-10 flex items-center justify-center">
+            <Image
+            src={Logo}
+            alt=""
+            width={50}
+            height={50}
+            />
           </div>
           {open && (
             <motion.div
