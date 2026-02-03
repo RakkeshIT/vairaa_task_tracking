@@ -84,10 +84,6 @@ export default function TaskDashboard() {
             <p className="text-amber-600">Track and manage your coding journey</p>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl hover:from-amber-600 hover:to-yellow-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
-          <Plus className="w-5 h-5" />
-          <span className="font-semibold">Add New Task</span>
-        </button>
       </div>
 
       {/* ==== Stats Cards ==== */}

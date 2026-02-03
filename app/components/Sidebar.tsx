@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import Image from "next/image";
 import Logo from '../assets/logo.png'
+import { ActivityIcon } from "lucide-react";
 interface SidebarProps {
   open: boolean;
   toggleSidebar: () => void;
@@ -20,7 +21,7 @@ export default function Sidebar({ open, toggleSidebar }: SidebarProps) {
     { name: "Overview", icon: <FiHome />, href: "/dashboard" },
     { name: "Daily Topics", icon: <FiBook />, href: "/dashboard/topics" },
     { name: "Tasks", icon: <FiCheckSquare />, href: "/dashboard/tasks" },
-    // { name: "Stats", icon: <FiBarChart2 />, href: "/dashboard/stats" },
+    // { name: "My Activities", icon: <ActivityIcon />, href: "/dashboard/my-activities" },
     // { name: "Profile", icon: <FiUser />, href: "/dashboard/profile" },
     // { name: "Settings", icon: <FiSettings />, href: "/dashboard/settings" },
   ];

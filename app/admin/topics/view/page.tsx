@@ -401,8 +401,7 @@ export default function TopicsTablePage() {
 
                                 {show && (
                                     <TextAlert onSubmit={onSubmit} topicName={topicName} topicId={topicId} isVisible={show} onClose={() => setShow(false)} title="Testing" description="Test" />
-                                )
-                                }
+                                )}
 
                                 {/* Pagination (optional) */}
                                 {filteredTopics.length > 0 && (

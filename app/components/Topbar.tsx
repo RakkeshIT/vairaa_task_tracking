@@ -115,7 +115,7 @@ export default function Topbar() {
           </button>
 
           {/* Notifications Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-amber-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          {/* <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-amber-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
             <div className="p-4 border-b border-amber-50">
               <h4 className="font-semibold text-amber-800">Notifications</h4>
               <p className="text-sm text-amber-600">You have {notifications} unread</p>
@@ -133,7 +133,7 @@ export default function Topbar() {
                 View all notifications
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Settings */}
@@ -212,8 +212,8 @@ export default function Topbar() {
                         src={user.avatar_url}
                         alt={user?.user.full_name}
                         className="rounded-xl object-cover border-2 border-amber-300"
-                        width={96}
-                        height={96}
+                        width={50}
+                        height={50}
                         onError={() => setProfileImageError(true)}
                       />
                     ) : (

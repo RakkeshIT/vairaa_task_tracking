@@ -76,8 +76,6 @@ topicName,
   }
 
   const s = styles[type]
-
-
   return (
     <AlertDialog open={isVisible}>
       <AlertDialogContent
@@ -94,7 +92,6 @@ topicName,
                 {title} - {topicName}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-sm text-gray-600">
-                Topic Id -  {topicId}
                 {description}
               </AlertDialogDescription>
             </div>
