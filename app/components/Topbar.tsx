@@ -32,12 +32,13 @@ export default function Topbar() {
     try {
       const res = await axios.get("/api/auth-user")
       const authUser = res.data.data;
+      const profileData = authUser.profileData || {}
       console.log("Auth User: ", authUser)
       if (res.status == 200) {
         setUser({
           ...authUser,
           student_id: authUser.user.student_id || '',
-          avatar_url: authUser.profileData.avatar_url || ''
+          avatar_url: profileData.avatar_url || ''
         });
       } else {
         setUser(null);
@@ -154,7 +155,7 @@ export default function Topbar() {
           ) : (
             <div className="flex items-center gap-3 ml-2 p-1.5 pr-4 rounded-xl hover:bg-amber-50/80 transition-all duration-200 cursor-pointer">
               <div className="relative">
-                {user?.avatar_url && !profileImageError ? (
+                {user?.avatar_url ? (
                   <Image
                     src={user.avatar_url}
                     alt={user.user.full_name}
