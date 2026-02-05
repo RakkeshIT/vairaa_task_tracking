@@ -22,6 +22,7 @@ import { LuCircle } from "react-icons/lu";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import Image from "next/image";
+import Link from "next/link";
 
 type UserProfile = {
   full_name: string;
@@ -469,9 +470,9 @@ export default function SimpleProfilePage() {
                             className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-800 font-medium text-sm truncate">
+                          <Link href={profile[social.key as keyof UserProfile]} target="_blank" className="text-gray-800 font-medium text-sm truncate">
                             {profile[social.key as keyof UserProfile] as string || "Not provided"}
-                          </p>
+                          </Link>
                         )}
                       </div>
                     </div>
