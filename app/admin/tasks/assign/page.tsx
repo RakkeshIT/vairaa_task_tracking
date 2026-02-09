@@ -29,6 +29,9 @@ interface User {
   student_id?: string;
 }
 
+interface Error {
+  err: string | unknown;
+}
 const sections = ["Javascript", "React JS", "Node Js", "Express Js"];
 
 export default function AssignTaskPage() {
@@ -70,9 +73,11 @@ export default function AssignTaskPage() {
         
         if (error) throw error;
         setUsers(data || []);
-      } catch (err: any) {
-        console.error("Error fetching users:", err.message);
+      } catch (err: unknown) {
+       if ( err instanceof Error)
+        { console.error("Error fetching users:", err.message);
         alert("Failed to load users");
+      }
       } finally {
         setLoadingUsers(false);
       }
@@ -179,11 +184,12 @@ export default function AssignTaskPage() {
       alert("Task assigned successfully ✅");
       setSelectedUsers([]);
       setAssignToAll(false);
-    } catch (err: any) {
-      console.error("Error assigning task:", err);
-      alert("Error assigning task: " + err.message);
+    } catch (err: unknown) {
+       if ( err instanceof Error)
+        { console.error("Error fetching users:", err.message);
+        alert("Failed to load users");
+      }
     }
-
     setLoading(false);
   };
 

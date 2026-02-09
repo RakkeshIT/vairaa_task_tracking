@@ -17,10 +17,11 @@ type User = {
   created_at: string
   student_id: string
   password: string
+  remark: string
 }
 
 type TaskResponse = {
-  usere: User
+  users: User
   assignedTask: AssignedTask[]
   records: {
     totalTasks: number
@@ -68,7 +69,7 @@ export default function TaskDashboard() {
 
   const completedCount = categoryTasks.filter(t => t.completed).length
   const inProgressCount = categoryTasks.filter(t => !t.completed).length
-
+  const totalPoints = tasks?.users.remark
   return (
     <div className="w-full bg-white rounded-2xl p-6">
       {/* ==== Header ==== */}
@@ -149,8 +150,8 @@ export default function TaskDashboard() {
           </div>
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-3xl font-bold text-white"></p>
-              <p className="text-amber-100 text-sm mt-2"></p>
+              <p className="text-3xl font-bold text-white">{totalPoints}</p>
+              <p className="text-amber-100 text-sm mt-2">You Earned Points</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <span className="text-white font-bold">⭐</span>

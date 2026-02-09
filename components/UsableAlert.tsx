@@ -8,42 +8,46 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog"
-import { CheckCircle, XCircle, Info, Upload, Link, ExternalLink } from "lucide-react"
+import { CheckCircle, XCircle, Info, Upload, Link, ExternalLink, Pointer } from "lucide-react"
 import { useState } from "react"
 
-type AlertType = "success" | "error" | "info"
+type AlertType = "success" | "error" | "info" 
 
 interface Props {
   isVisible: boolean
-  title: string
-  description: string
+  title?: string
+  description?: string
   type?: AlertType
   onClose: () => void
   onSubmit?: (link: string) => void
-  topicId?: string
+  name?: string
+  value?: string
   topicName?: string
+  placeholder?:string;
 }
 
-export default function TextAlert({
+const Alert1 = ({
 topicName,
-  topicId,
+  name,
+  value,
   isVisible,
   title,
   description,
+  placeholder,
   type = "success",
   onClose,
   onSubmit,
-}: Props) {
-  const [link, setLink] = useState("")
+}: Props)  => {
+  const [inputVal, setInputVal] = useState("")
   const [isUploading, setIsUploading] = useState(false)
 
   const handleSubmit = () => {
-    if (onSubmit && link.trim()) {
+    if (onSubmit && inputVal.trim()) {
       setIsUploading(true)
-      onSubmit(link)
+      onSubmit(inputVal)
       setTimeout(() => {
         setIsUploading(false)
-        setLink("")
+        setInputVal("")
       }, 1000)
     }
   }
@@ -97,19 +101,25 @@ topicName,
             </div>
           </div>
 
+
+          <div className="text-right">
+              <AlertDialogTitle className="text-sm text-gray-900">
+                {name} - {value}
+              </AlertDialogTitle>
+            </div>
           {/* Notes Link Section */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <Link className="w-4 h-4" />
-              <span>Notes Link</span>
+              <Pointer className="w-4 h-4" />
+              <span>Remarks</span>
             </div>
             
             <div className="relative">
               <input
                 type="text"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="Paste Google Drive, Dropbox, or cloud storage link"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                placeholder={placeholder}
                 className="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors text-sm placeholder:text-gray-400"
               />
               <ExternalLink className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -135,7 +145,7 @@ topicName,
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleSubmit}
-            disabled={!link.trim() || isUploading}
+            disabled={!inputVal.trim() || isUploading}
             className={`w-full sm:w-auto px-5 py-2.5 text-sm font-medium rounded-lg ${s.btn} disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
           >
             {isUploading ? (
@@ -164,4 +174,6 @@ topicName,
 }
 
 
-
+export const AlertWithInput = (props: Props) => {
+    return <Alert1 {...props} type="success"/>
+}

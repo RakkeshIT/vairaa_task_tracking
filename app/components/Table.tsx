@@ -72,6 +72,7 @@ export default function TaskTable({ tasks }: TaskTableProps) {
             <th className="text-left p-4 text-amber-700 font-semibold"> </th>
             <th className="text-left p-4 text-amber-700 font-semibold">Due Date</th>
             <th className="text-left p-4 text-amber-700 font-semibold">Points</th>
+            <th className="text-left p-4 text-amber-700 font-semibold">Your Points</th>
             <th className="text-left p-4 text-amber-700 font-semibold">Actions</th>
           </tr>
         </thead>
